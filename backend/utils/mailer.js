@@ -8,12 +8,13 @@ const getTransporter = async () => {
         return null;
     }
 
-    // console.log('Creating transporter with host:', config.host);
+    console.log(`Attempting SMTP connection to ${config.host}:${config.port} (User: ${config.user})`);
 
     return nodemailer.createTransport({
         host: config.host,
         port: config.port,
         secure: config.port === 465,
+        pool: true, // Enable connection pooling
         auth: {
             user: config.user,
             pass: config.pass
@@ -21,9 +22,12 @@ const getTransporter = async () => {
         tls: {
             rejectUnauthorized: false
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 30000
+        requireTLS: config.port === 587, // Enforce TLS for port 587
+        connectionTimeout: 15000, // 15 seconds
+        greetingTimeout: 15000,
+        socketTimeout: 30000,
+        logger: true, // Output logs to console
+        debug: true   // Include debug info in logs
     });
 };
 
