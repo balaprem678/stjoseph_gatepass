@@ -17,7 +17,13 @@ const getTransporter = async () => {
         auth: {
             user: config.user,
             pass: config.pass
-        }
+        },
+        tls: {
+            rejectUnauthorized: false
+        },
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,
+        socketTimeout: 30000
     });
 };
 
