@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function AdminLoginPage() {
     const [loginId, setLoginId] = useState('');
@@ -13,7 +14,7 @@ export default function AdminLoginPage() {
     const handleLogin = async () => {
         try {
             setError('');
-            const res = await fetch('http://localhost:5001/api/auth/login', {
+            const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ loginId, role: 'admin', authValue })

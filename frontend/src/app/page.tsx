@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function LoginPage() {
     const [role, setRole] = useState<'student' | 'staff'>('student');
@@ -22,7 +23,7 @@ export default function LoginPage() {
         try {
             setError('');
             setMessage('');
-            const res = await fetch('http://localhost:5001/api/auth/send-otp', {
+            const res = await fetch(`${API_URL}/auth/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ loginId, role })
@@ -42,7 +43,7 @@ export default function LoginPage() {
     const handleLogin = async () => {
         try {
             setError('');
-            const res = await fetch('http://localhost:5001/api/auth/login', {
+            const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ loginId, role, authValue })
@@ -63,7 +64,7 @@ export default function LoginPage() {
     const handleRegister = async () => {
         try {
             setError('');
-            const res = await fetch('http://localhost:5001/api/auth/register', {
+            const res = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...regData, role })

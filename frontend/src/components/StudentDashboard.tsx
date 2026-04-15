@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function StudentDashboard() {
     const [user, setUser] = useState<any>(null);
@@ -49,7 +50,7 @@ export default function StudentDashboard() {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5001/api/gatepass/my-requests${filterStatus ? `?status=${filterStatus}` : ''}`, {
+            const res = await fetch(`${API_URL}/gatepass/my-requests${filterStatus ? `?status=${filterStatus}` : ''}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -86,8 +87,8 @@ export default function StudentDashboard() {
             const token = localStorage.getItem('token');
             const method = editingRequest ? 'PATCH' : 'POST';
             const url = editingRequest 
-                ? `http://localhost:5001/api/gatepass/${editingRequest._id}`
-                : 'http://localhost:5001/api/gatepass/apply';
+                ? `${API_URL}/gatepass/${editingRequest._id}`
+                : `${API_URL}/gatepass/apply`;
 
             const res = await fetch(url, {
                 method,
@@ -113,7 +114,7 @@ export default function StudentDashboard() {
         if (!confirm('Are you sure you want to delete this request?')) return;
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5001/api/gatepass/${id}`, {
+            const res = await fetch(`${API_URL}/gatepass/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

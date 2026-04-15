@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function AdminDashboard() {
     const [user, setUser] = useState<any>(null);
@@ -28,7 +29,7 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5001/api/admin/stats', {
+        const res = await fetch(`${API_URL}/admin/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
     const fetchUsers = async (role?: string) => {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:5001/api/admin/users${role ? `?role=${role}` : ''}`, {
+        const res = await fetch(`${API_URL}/admin/users${role ? `?role=${role}` : ''}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -48,7 +49,7 @@ export default function AdminDashboard() {
 
     const fetchSMTP = async () => {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5001/api/admin/smtp', {
+        const res = await fetch(`${API_URL}/admin/smtp`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -57,7 +58,7 @@ export default function AdminDashboard() {
 
     const fetchSMS = async () => {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5001/api/admin/sms', {
+        const res = await fetch(`${API_URL}/admin/sms`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -76,7 +77,7 @@ export default function AdminDashboard() {
     const handleCreateProfile = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/admin/create-profile', {
+            const res = await fetch(`${API_URL}/admin/create-profile`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(newProfile)
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
     const handleUpdateSMTP = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/admin/smtp', {
+            const res = await fetch(`${API_URL}/admin/smtp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(smtp)
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
     const handleUpdateSMS = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5001/api/admin/sms', {
+            const res = await fetch(`${API_URL}/admin/sms`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(sms)

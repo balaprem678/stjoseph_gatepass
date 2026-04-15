@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function SecurityDashboard() {
     const [user, setUser] = useState<any>(null);
@@ -32,7 +33,7 @@ export default function SecurityDashboard() {
             if (searchDate) query += `&date=${searchDate}`;
             if (searchTerm) query += `&enrollNo=${searchTerm}`;
 
-            const res = await fetch(`http://localhost:5001/api/gatepass/all${query}`, {
+            const res = await fetch(`${API_URL}/gatepass/all${query}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -52,7 +53,7 @@ export default function SecurityDashboard() {
         if (!confirm('Mark this pass as used?')) return;
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5001/api/gatepass/${id}/mark-used`, {
+            const res = await fetch(`${API_URL}/gatepass/${id}/mark-used`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

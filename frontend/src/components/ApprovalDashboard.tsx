@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/utils/api';
 
 export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' }) {
     const [user, setUser] = useState<any>(null);
@@ -30,7 +31,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5001/api/gatepass/all?status=${filterStatus}`, {
+            const res = await fetch(`${API_URL}/gatepass/all?status=${filterStatus}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -49,7 +50,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
     const handleAction = async (id: string, decision: 'approved' | 'rejected', reason: string = '') => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5001/api/gatepass/${id}/status`, {
+            const res = await fetch(`${API_URL}/gatepass/${id}/status`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',

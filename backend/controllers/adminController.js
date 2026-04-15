@@ -59,6 +59,15 @@ exports.updateSMTP = async (req, res) => {
     }
 };
 
+exports.getSMTPConfig = async (req, res) => {
+    try {
+        const config = await SMTPConfig.findOne();
+        res.json({ config: config || { host: '', port: 587, user: '', pass: '', from: '' } });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.getSMSConfig = async (req, res) => {
     try {
         const config = await SMSConfig.findOne();

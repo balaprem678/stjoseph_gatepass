@@ -18,6 +18,7 @@ router.use(authorize(['admin']));
 router.post('/create-profile', adminController.createProfile);
 router.patch('/update-profile/:mongoId', adminController.updateProfile);
 router.get('/users', adminController.listUsers);
+router.get('/smtp', adminController.getSMTPConfig);
 router.post('/smtp', adminController.updateSMTP);
 router.get('/sms', adminController.getSMSConfig);
 router.post('/sms', adminController.updateSMS);
