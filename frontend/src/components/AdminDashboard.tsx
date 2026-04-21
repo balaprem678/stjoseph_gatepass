@@ -9,7 +9,16 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'stats' | 'profiles' | 'users' | 'smtp' | 'sms'>('stats');
     const [stats, setStats] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
-    const [smtp, setSmtp] = useState({ host: '', port: 587, user: '', pass: '', from: '' });
+    const [smtp, setSmtp] = useState({ 
+        serviceType: 'smtp', 
+        host: '', 
+        port: 587, 
+        user: '', 
+        pass: '', 
+        apiKey: '', 
+        from: '',
+        fromName: ''
+    });
     const [sms, setSms] = useState({ apiKey: '' });
     const [newProfile, setNewProfile] = useState({ loginId: '', fullName: '', email: '', password: '', role: 'hod' });
     const [loading, setLoading] = useState(false);
@@ -266,29 +275,57 @@ export default function AdminDashboard() {
 
                 {activeTab === 'smtp' && (
                     <div className="table-section" style={{ maxWidth: '600px' }}>
-                        <h2>SMTP Configuration</h2>
+                        <h2>Email Configuration</h2>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
                             <div className="form-group">
-                                <label className="form-label">SMTP Host</label>
-                                <input type="text" className="form-control" value={smtp.host} onChange={(e) => setSmtp({...smtp, host: e.target.value})} placeholder="smtp.gmail.com" />
+                                <label className="form-label">Email Service</label>
+                                <select 
+                                    className="form-control" 
+                                    value={smtp.serviceType} 
+                                    onChange={(e) => setSmtp({...smtp, serviceType: e.target.value})}
+                                >
+                                    <option value="smtp">Standard SMTP (Gmail, Outlook, etc.)</option>
+                                    <option value="brevo">Brevo API</option>
+                                </select>
                             </div>
+
+                            {smtp.serviceType === 'smtp' ? (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">SMTP Host</label>
+                                        <input type="text" className="form-control" value={smtp.host} onChange={(e) => setSmtp({...smtp, host: e.target.value})} placeholder="smtp.gmail.com" />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">SMTP Port</label>
+                                        <input type="number" className="form-control" value={smtp.port} onChange={(e) => setSmtp({...smtp, port: parseInt(e.target.value)})} placeholder="587" />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">SMTP User (Email)</label>
+                                        <input type="text" className="form-control" value={smtp.user} onChange={(e) => setSmtp({...smtp, user: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">SMTP Password / App Password</label>
+                                        <input type="password" className="form-control" value={smtp.pass} onChange={(e) => setSmtp({...smtp, pass: e.target.value})} />
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="form-group">
+                                    <label className="form-label">Brevo API Key</label>
+                                    <input type="password" className="form-control" value={smtp.apiKey} onChange={(e) => setSmtp({...smtp, apiKey: e.target.value})} placeholder="xkeysib-..." />
+                                </div>
+                            )}
+
                             <div className="form-group">
-                                <label className="form-label">SMTP Port</label>
-                                <input type="number" className="form-control" value={smtp.port} onChange={(e) => setSmtp({...smtp, port: parseInt(e.target.value)})} placeholder="587" />
+                                <label className="form-label">From Name</label>
+                                <input type="text" className="form-control" value={(smtp as any).fromName} onChange={(e) => setSmtp({...smtp, fromName: e.target.value})} placeholder="St. Joseph Gate Pass" />
                             </div>
+
                             <div className="form-group">
-                                <label className="form-label">SMTP User (Email)</label>
-                                <input type="text" className="form-control" value={smtp.user} onChange={(e) => setSmtp({...smtp, user: e.target.value})} />
+                                <label className="form-label">From Email Address</label>
+                                <input type="email" className="form-control" value={smtp.from} onChange={(e) => setSmtp({...smtp, from: e.target.value})} placeholder="noreply@example.com" />
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">SMTP Password / App Password</label>
-                                <input type="password" className="form-control" value={smtp.pass} onChange={(e) => setSmtp({...smtp, pass: e.target.value})} />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">From Email</label>
-                                <input type="email" className="form-control" value={smtp.from} onChange={(e) => setSmtp({...smtp, from: e.target.value})} />
-                            </div>
-                            <button className="btn btn-primary" onClick={handleUpdateSMTP}>Save SMTP Configuration</button>
+                            
+                            <button className="btn btn-primary" onClick={handleUpdateSMTP}>Save Configuration</button>
                         </div>
                     </div>
                 )}

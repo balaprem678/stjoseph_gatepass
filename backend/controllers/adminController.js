@@ -62,7 +62,7 @@ exports.updateSMTP = async (req, res) => {
 exports.getSMTPConfig = async (req, res) => {
     try {
         const config = await SMTPConfig.findOne();
-        res.json({ config: config || { host: '', port: 587, user: '', pass: '', from: '' } });
+        res.json({ config: config || { serviceType: 'smtp', host: '', port: 587, user: '', pass: '', apiKey: '', from: '', fromName: 'St. Joseph Gate Pass' } });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

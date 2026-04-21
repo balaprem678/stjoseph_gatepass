@@ -1,0 +1,131 @@
+/* Background */
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #9333ea);
+  padding: 20px;
+}
+
+/* Card */
+.card {
+  width: 100%;
+  max-width: 380px;
+  padding: 25px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  color: #fff;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.header img {
+  width: 45px;
+}
+.header h2 {
+  font-size: 20px;
+}
+.header p {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+/* Role */
+.role-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.role-group button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+.role-group .active {
+  background: #fff;
+  color: #4f46e5;
+}
+
+/* OTP */
+.otp-row {
+  display: flex;
+  gap: 8px;
+}
+.otp-row button {
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  color: #4f46e5;
+}
+
+/* Radio */
+.radio-group {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.main-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #fff;
+  color: #4f46e5;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Text */
+.link {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.link span {
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Messages */
+.error {
+  color: #ff6b6b;
+  font-size: 12px;
+}
+.success {
+  color: #00ffae;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+  }
+
+  .otp-row {
+    flex-direction: column;
+  }
+}

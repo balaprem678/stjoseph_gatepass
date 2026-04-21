@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/utils/api';
+import "./page.css"
+import logo from "../../public/logo.png";
 
 export default function LoginPage() {
     const [role, setRole] = useState<'student' | 'staff'>('student');
@@ -13,7 +15,7 @@ export default function LoginPage() {
     const [otpSent, setOtpSent] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-    
+
     // Register fields
     const [regData, setRegData] = useState({ loginId: '', fullName: '', email: '', phone: '' });
 
@@ -83,14 +85,17 @@ export default function LoginPage() {
     return (
         <div className="card-wrapper">
             <div className="card">
-                <h2>🔐 Gate Pass</h2>
-                <div className="subhead">Student / Staff Portal</div>
+                <div className='tac'>
+                    <h2 className='card-title'><img src={logo.src} alt="Logo" width={50} /> St. Joseph's College</h2>
+                    <h5>College Gate Pass Management System</h5>
+                    <div className="subhead">Student / Faculty Portal</div>
+                </div>
 
                 {view === 'login' && (
                     <>
                         <div className="role-group">
                             {roles.map((r) => (
-                                <button 
+                                <button
                                     key={r}
                                     className={`role-btn ${role === r ? 'active' : ''}`}
                                     onClick={() => {
@@ -109,11 +114,11 @@ export default function LoginPage() {
 
                         <div className="form-group">
                             <label>{role === 'student' ? 'Enrollment Number' : 'Staff ID'}</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                value={loginId} 
-                                onChange={(e) => setLoginId(e.target.value)} 
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={loginId}
+                                onChange={(e) => setLoginId(e.target.value)}
                                 placeholder={role === 'student' ? '2024CS101' : 'staff123'}
                             />
                         </div>
@@ -135,11 +140,11 @@ export default function LoginPage() {
                             <label>{(role === 'student' || (role === 'staff' && staffAuthType === 'otp')) ? 'OTP' : 'Password'}</label>
                             {(role === 'student' || (role === 'staff' && staffAuthType === 'otp')) ? (
                                 <div className="otp-row">
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        value={authValue} 
-                                        onChange={(e) => setAuthValue(e.target.value)} 
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={authValue}
+                                        onChange={(e) => setAuthValue(e.target.value)}
                                         placeholder="6-digit OTP"
                                     />
                                     <button className="send-btn" onClick={handleSendOTP}>
@@ -147,19 +152,19 @@ export default function LoginPage() {
                                     </button>
                                 </div>
                             ) : (
-                                <input 
-                                    type="password" 
-                                    className="form-control" 
-                                    value={authValue} 
-                                    onChange={(e) => setAuthValue(e.target.value)} 
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    value={authValue}
+                                    onChange={(e) => setAuthValue(e.target.value)}
                                     placeholder="Enter password"
                                 />
                             )}
-                            {message && <div style={{color:'green', fontSize:'12px', marginTop:'5px'}}>{message}</div>}
+                            {message && <div style={{ color: 'green', fontSize: '12px', marginTop: '5px' }}>{message}</div>}
                             {error && <div className="error">{error}</div>}
                         </div>
 
-                        <button className="btn btn-primary" style={{width:'100%'}} onClick={handleLogin}>
+                        <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleLogin}>
                             Login
                         </button>
 
@@ -173,42 +178,42 @@ export default function LoginPage() {
                     <>
                         <div className="form-group">
                             <label>{role === 'student' ? 'Enrollment Number' : 'Staff ID'}</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                value={regData.loginId} 
-                                onChange={(e) => setRegData({...regData, loginId: e.target.value})} 
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={regData.loginId}
+                                onChange={(e) => setRegData({ ...regData, loginId: e.target.value })}
                             />
                         </div>
                         <div className="form-group">
                             <label>Full Name</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                value={regData.fullName} 
-                                onChange={(e) => setRegData({...regData, fullName: e.target.value})} 
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={regData.fullName}
+                                onChange={(e) => setRegData({ ...regData, fullName: e.target.value })}
                             />
                         </div>
                         <div className="form-group">
                             <label>Email</label>
-                            <input 
-                                type="email" 
-                                className="form-control" 
-                                value={regData.email} 
-                                onChange={(e) => setRegData({...regData, email: e.target.value})} 
+                            <input
+                                type="email"
+                                className="form-control"
+                                value={regData.email}
+                                onChange={(e) => setRegData({ ...regData, email: e.target.value })}
                             />
                         </div>
                         <div className="form-group">
                             <label>Phone</label>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                value={regData.phone} 
-                                onChange={(e) => setRegData({...regData, phone: e.target.value})} 
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={regData.phone}
+                                onChange={(e) => setRegData({ ...regData, phone: e.target.value })}
                             />
                         </div>
                         {error && <div className="error">{error}</div>}
-                        <button className="btn btn-primary" style={{width:'100%'}} onClick={handleRegister}>
+                        <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleRegister}>
                             Register
                         </button>
                         <div className="link-text">

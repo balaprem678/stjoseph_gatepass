@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/utils/api';
+import './approvaldashboard.scss';
 
 export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' }) {
     const [user, setUser] = useState<any>(null);
@@ -52,7 +53,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
             const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/gatepass/${id}/status`, {
                 method: 'PATCH',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
@@ -76,7 +77,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
         router.push('/');
     };
 
-    const filteredRequests = requests.filter(req => 
+    const filteredRequests = requests.filter(req =>
         req.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         req.enrollNo.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -96,16 +97,16 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                 <div className="table-header">
                     <h2>Gate Pass Approval Queue</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <input 
-                            type="text" 
-                            className="form-control" 
-                            placeholder="Search Name/Enroll..." 
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search Name/Enroll..."
                             style={{ width: '200px', padding: '6px 12px' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <select 
-                            className="form-control" 
+                        <select
+                            className="form-control"
                             style={{ width: '150px', padding: '6px 12px' }}
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
@@ -136,7 +137,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={8} style={{textAlign:'center', padding:'20px'}}>Loading...</td></tr>
+                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
                             ) : filteredRequests.length === 0 ? (
                                 <tr><td colSpan={8} className="empty-state">No requests matching criteria.</td></tr>
                             ) : filteredRequests.map((req) => (
@@ -154,14 +155,14 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                     <td><span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span></td>
                                     <td>
                                         <div className="action-group">
-                                            {((role === 'hod' && req.hodApproval.status === 'waiting') || 
-                                              (role === 'principal' && req.principalApproval.status === 'waiting' && req.hodApproval.status === 'approved')) ? (
+                                            {((role === 'hod' && req.hodApproval.status === 'waiting') ||
+                                                (role === 'principal' && req.principalApproval.status === 'waiting' && req.hodApproval.status === 'approved')) ? (
                                                 <>
                                                     <button className="btn btn-success btn-sm" onClick={() => handleAction(req._id, 'approved')}>Approve</button>
                                                     <button className="btn btn-danger btn-sm" onClick={() => { setRejectingId(req._id); setRejectionModalOpen(true); }}>Reject</button>
                                                 </>
                                             ) : (
-                                                <span style={{fontSize:'12px', color:'#666'}}>Processed</span>
+                                                <span style={{ fontSize: '12px', color: '#666' }}>Processed</span>
                                             )}
                                         </div>
                                     </td>
@@ -178,10 +179,10 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                         <h2>Reject Request</h2>
                         <div className="form-group" style={{ marginTop: '20px', marginBottom: '20px' }}>
                             <label className="form-label">Reason for rejection</label>
-                            <textarea 
-                                className="form-control" 
-                                rows={3} 
-                                value={rejectionReason} 
+                            <textarea
+                                className="form-control"
+                                rows={3}
+                                value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 placeholder="Please provide a reason..."
                             ></textarea>
