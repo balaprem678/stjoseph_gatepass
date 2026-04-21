@@ -15,6 +15,7 @@ exports.apply = async (req, res) => {
             inTime,
             date,
             reason,
+            userRole: req.user.role, 
             userId: req.user.id // From auth middleware
         });
 
@@ -33,6 +34,11 @@ exports.listAll = async (req, res) => {
         if (status) query.status = status;
         if (date) query.date = date;
         if (enrollNo) query.enrollNo = { $regex: enrollNo, $options: 'i' };
+
+        // Hide staff requests from HODs
+        if (req.user.role === 'hod') {
+            query.userRole = 'student';
+        }
 
         const passes = await GatePass.find(query).sort({ createdAt: -1 });
         res.json(passes);
@@ -70,14 +76,37 @@ exports.updateStatus = async (req, res) => {
 
         if (role === 'hod') {
             gatePass.hodApproval = { status: decision, date: new Date() };
+            if (decision === 'approved') {
+                gatePass.status = 'hod_approved';
+                
+                // Notify user about HOD approval
+                await sendEmail({
+                    to: gatePass.email,
+                    subject: 'Gate Pass Approved by HOD',
+                    text: `Your gate pass application (ID: ${gatePass._id}) has been approved by the HOD and is now pending Principal's approval.`
+                });
+            }
         } else if (role === 'principal') {
             gatePass.principalApproval = { status: decision, date: new Date() };
+            
+            // For staff, Principal approval is final. For students, HOD must have approved first.
+            const isStaffApproval = gatePass.userRole === 'staff';
+            const isStudentFinalApproval = gatePass.userRole === 'student' && gatePass.hodApproval.status === 'approved';
+
+            if (decision === 'approved' && (isStaffApproval || isStudentFinalApproval)) {
+                gatePass.status = 'principal_approved';
+                
+                // Notify user about Final approval
+                await sendEmail({
+                    to: gatePass.email,
+                    subject: 'Gate Pass Final Approval',
+                    text: `Your gate pass application (ID: ${gatePass._id}) has received final approval from the Principal. You can now use it at the gate.`
+                });
+            }
         }
 
-        // Update overall status
-        if (gatePass.hodApproval.status === 'approved' && gatePass.principalApproval.status === 'approved') {
-            gatePass.status = 'principal_approved';
-        } else if (gatePass.hodApproval.status === 'rejected' || gatePass.principalApproval.status === 'rejected') {
+        // Handle Rejection
+        if (decision === 'rejected') {
             gatePass.status = 'rejected';
             if (rejectionReason) gatePass.rejectionReason = rejectionReason;
             
@@ -85,17 +114,15 @@ exports.updateStatus = async (req, res) => {
             const emailPromise = sendEmail({
                 to: gatePass.email,
                 subject: 'Gate Pass Rejected',
-                text: `Your gate pass application (ID: ${gatePass._id}) has been rejected. \n\nReason: ${rejectionReason || 'No reason provided.'}`
+                text: `Your gate pass application (ID: ${gatePass._id}) has been rejected by ${role.toUpperCase()}. \n\nReason: ${rejectionReason || 'No reason provided.'}`
             });
 
             const smsPromise = sendSMS({
                 to: gatePass.phone,
-                message: `Your gate pass application (ID: ${gatePass._id}) has been rejected. Reason: ${rejectionReason || 'No reason provided.'}`
+                message: `Your gate pass application (ID: ${gatePass._id}) has been rejected by ${role.toUpperCase()}. Reason: ${rejectionReason || 'No reason provided.'}`
             });
 
             await Promise.allSettled([emailPromise, smsPromise]);
-        } else if (gatePass.hodApproval.status === 'approved') {
-            gatePass.status = 'hod_approved';
         }
 
         await gatePass.save();
