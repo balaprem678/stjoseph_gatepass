@@ -37,9 +37,9 @@ export default function StudentDashboard() {
         }
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        setFormData(prev => ({ 
-            ...prev, 
-            fullName: parsedUser.fullName, 
+        setFormData(prev => ({
+            ...prev,
+            fullName: parsedUser.fullName,
             enrollNo: parsedUser.loginId,
             email: parsedUser.email
         }));
@@ -86,13 +86,13 @@ export default function StudentDashboard() {
         try {
             const token = localStorage.getItem('token');
             const method = editingRequest ? 'PATCH' : 'POST';
-            const url = editingRequest 
+            const url = editingRequest
                 ? `${API_URL}/gatepass/${editingRequest._id}`
                 : `${API_URL}/gatepass/apply`;
 
             const res = await fetch(url, {
                 method,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
@@ -100,7 +100,7 @@ export default function StudentDashboard() {
             });
 
             if (!res.ok) throw new Error('Failed to save request');
-            
+
             alert(editingRequest ? 'Request updated' : 'Request submitted');
             setIsModalOpen(false);
             setEditingRequest(null);
@@ -141,7 +141,7 @@ export default function StudentDashboard() {
         setIsModalOpen(true);
     };
 
-    const filteredRequests = requests.filter(req => 
+    const filteredRequests = requests.filter(req =>
         req.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         req.enrollNo.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -162,16 +162,16 @@ export default function StudentDashboard() {
                 <div className="table-header">
                     <h2>My Gate Pass Requests</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <input 
-                            type="text" 
-                            className="form-control" 
-                            placeholder="Search..." 
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search..."
                             style={{ width: '200px', padding: '6px 12px' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <select 
-                            className="form-control" 
+                        <select
+                            className="form-control"
                             style={{ width: '150px', padding: '6px 12px' }}
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
@@ -203,7 +203,7 @@ export default function StudentDashboard() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={9} style={{textAlign:'center', padding:'20px'}}>Loading...</td></tr>
+                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
                             ) : filteredRequests.length === 0 ? (
                                 <tr><td colSpan={9} className="empty-state">No requests found.</td></tr>
                             ) : filteredRequests.map((req) => (
@@ -235,7 +235,7 @@ export default function StudentDashboard() {
                                                     <button className="btn btn-danger btn-sm" onClick={() => handleDelete(req._id)}>Delete</button>
                                                 </>
                                             )}
-                                            {req.status !== 'pending' && <span style={{fontSize:'12px', color:'#666'}}>Locked</span>}
+                                            {req.status !== 'pending' && <span style={{ fontSize: '12px', color: '#666' }}>Locked</span>}
                                         </div>
                                     </td>
                                 </tr>
@@ -259,35 +259,35 @@ export default function StudentDashboard() {
                             </div>
                             <div>
                                 <label className="form-label">Full Name</label>
-                                <input type="text" className="form-control" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} />
+                                <input type="text" className="form-control" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">Enroll No</label>
-                                <input type="text" className="form-control" value={formData.enrollNo} onChange={(e) => setFormData({...formData, enrollNo: e.target.value})} />
+                                <input type="text" className="form-control" value={formData.enrollNo} onChange={(e) => setFormData({ ...formData, enrollNo: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">Phone</label>
-                                <input type="text" className="form-control" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                                <input type="text" className="form-control" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">Email</label>
-                                <input type="email" className="form-control" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                                <input type="email" className="form-control" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">Out Time</label>
-                                <input type="time" className="form-control" value={formData.outTime} onChange={(e) => setFormData({...formData, outTime: e.target.value})} />
+                                <input type="time" className="form-control" value={formData.outTime} onChange={(e) => setFormData({ ...formData, outTime: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">In Time</label>
-                                <input type="time" className="form-control" value={formData.inTime} onChange={(e) => setFormData({...formData, inTime: e.target.value})} />
+                                <input type="time" className="form-control" value={formData.inTime} onChange={(e) => setFormData({ ...formData, inTime: e.target.value })} />
                             </div>
                             <div>
                                 <label className="form-label">Date</label>
-                                <input type="date" className="form-control" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                <input type="date" className="form-control" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
                             </div>
                             <div className="full-width">
                                 <label className="form-label">Reason</label>
-                                <textarea className="form-control" rows={2} value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})}></textarea>
+                                <textarea className="form-control" rows={2} value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })}></textarea>
                             </div>
                         </div>
                         <div className="modal-buttons">
