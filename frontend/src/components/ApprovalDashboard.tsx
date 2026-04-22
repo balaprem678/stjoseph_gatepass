@@ -155,8 +155,8 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                     <td><span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span></td>
                                     <td>
                                         <div className="action-group">
-                                            {((role === 'hod' && req.hodApproval.status === 'waiting') ||
-                                                (role === 'principal' && req.principalApproval.status === 'waiting' && req.hodApproval.status === 'approved')) ? (
+                                            {((role === 'hod' && req.hodApproval.status === 'waiting' && req.userRole !== 'staff') ||
+                                                (role === 'principal' && req.principalApproval.status === 'waiting' && (req.hodApproval.status === 'approved' || req.userRole === 'staff'))) ? (
                                                 <>
                                                     <button className="btn btn-success btn-sm" onClick={() => handleAction(req._id, 'approved')}>Approve</button>
                                                     <button className="btn btn-danger btn-sm" onClick={() => { setRejectingId(req._id); setRejectionModalOpen(true); }}>Reject</button>

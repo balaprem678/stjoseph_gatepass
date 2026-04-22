@@ -21,6 +21,7 @@ const gatePassSchema = new mongoose.Schema({
     },
     usedAt: { type: Date },
     rejectionReason: { type: String },
+    userRole: { type: String, enum: ['student', 'staff'], default: 'student' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
