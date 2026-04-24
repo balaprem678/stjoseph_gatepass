@@ -17,6 +17,17 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
 
     const router = useRouter();
 
+    const format24To12 = (time24: string) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        let h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12;
+        const m = minutes.padStart(2, '0');
+        return `${h}:${m} ${ampm}`;
+    };
+
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
@@ -150,7 +161,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                     <td>{req.fullName}</td>
                                     <td>{req.enrollNo}</td>
                                     <td>{req.date}</td>
-                                    <td>{req.outTime} - {req.inTime}</td>
+                                    <td>{format24To12(req.outTime)} - {format24To12(req.inTime)}</td>
                                     <td>{req.reason}</td>
                                     <td><span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span></td>
                                     <td>

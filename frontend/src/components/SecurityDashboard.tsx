@@ -14,6 +14,17 @@ export default function SecurityDashboard() {
 
     const router = useRouter();
 
+    const format24To12 = (time24: string) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        let h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12;
+        const m = minutes.padStart(2, '0');
+        return `${h}:${m} ${ampm}`;
+    };
+
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
@@ -85,23 +96,23 @@ export default function SecurityDashboard() {
                 <div className="table-header">
                     <h2>Gate Pass Verification</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        <input 
-                            type="text" 
-                            className="form-control" 
-                            placeholder="Search Enroll No..." 
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search Enroll No..."
                             style={{ width: '180px', padding: '6px 12px' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <input 
-                            type="date" 
-                            className="form-control" 
+                        <input
+                            type="date"
+                            className="form-control"
                             style={{ width: '150px', padding: '6px 12px' }}
                             value={searchDate}
                             onChange={(e) => setSearchDate(e.target.value)}
                         />
-                        <select 
-                            className="form-control" 
+                        <select
+                            className="form-control"
                             style={{ width: '150px', padding: '6px 12px' }}
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
@@ -129,7 +140,7 @@ export default function SecurityDashboard() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={8} style={{textAlign:'center', padding:'20px'}}>Loading...</td></tr>
+                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
                             ) : requests.length === 0 ? (
                                 <tr><td colSpan={8} className="empty-state">No matching approved passes.</td></tr>
                             ) : requests.map((req) => (
@@ -142,14 +153,14 @@ export default function SecurityDashboard() {
                                     <td>{req.fullName}</td>
                                     <td>{req.enrollNo}</td>
                                     <td>{req.date}</td>
-                                    <td>{req.outTime} - {req.inTime}</td>
+                                    <td>{format24To12(req.outTime)} - {format24To12(req.inTime)}</td>
                                     <td><span className={`status status-${req.hodApproval.status}`}>{req.hodApproval.status}</span></td>
                                     <td><span className={`status status-${req.principalApproval.status}`}>{req.principalApproval.status}</span></td>
                                     <td>
                                         {req.status === 'principal_approved' ? (
                                             <button className="btn btn-primary btn-sm" onClick={() => handleMarkUsed(req._id)}>Mark Used</button>
                                         ) : (
-                                            <span style={{fontSize:'12px', color:'#666'}}>{req.status.toUpperCase()}</span>
+                                            <span style={{ fontSize: '12px', color: '#666' }}>{req.status.toUpperCase()}</span>
                                         )}
                                     </td>
                                 </tr>
