@@ -9,7 +9,6 @@ export default function SecurityDashboard() {
     const [requests, setRequests] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchDate, setSearchDate] = useState('');
-    const [filterStatus, setFilterStatus] = useState('principal_approved');
     const [loading, setLoading] = useState(true);
 
     const router = useRouter();
@@ -40,9 +39,10 @@ export default function SecurityDashboard() {
         try {
             setLoading(true);
             const token = localStorage.getItem('token');
-            let query = `?status=${filterStatus}`;
-            if (searchDate) query += `&date=${searchDate}`;
-            if (searchTerm) query += `&enrollNo=${searchTerm}`;
+            const params = new URLSearchParams();
+            if (searchDate) params.append('date', searchDate);
+            if (searchTerm) params.append('enrollNo', searchTerm);
+            const query = params.toString() ? `?${params.toString()}` : '';
 
             const res = await fetch(`${API_URL}/gatepass/all${query}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -58,7 +58,7 @@ export default function SecurityDashboard() {
 
     useEffect(() => {
         if (user) fetchRequests();
-    }, [filterStatus, searchDate, searchTerm]);
+    }, [searchDate, searchTerm]);
 
     const handleMarkUsed = async (id: string) => {
         if (!confirm('Mark this pass as used?')) return;
@@ -111,16 +111,6 @@ export default function SecurityDashboard() {
                             value={searchDate}
                             onChange={(e) => setSearchDate(e.target.value)}
                         />
-                        <select
-                            className="form-control"
-                            style={{ width: '150px', padding: '6px 12px' }}
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                        >
-                            <option value="principal_approved">Approved Only</option>
-                            <option value="used">Used Only</option>
-                            <option value="">All</option>
-                        </select>
                     </div>
                 </div>
 

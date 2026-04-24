@@ -339,6 +339,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/utils/api';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function StudentDashboard() {
     const [user, setUser] = useState<any>(null);
@@ -363,6 +365,21 @@ export default function StudentDashboard() {
     });
 
     const router = useRouter();
+
+    const timeToDate = (timeStr: string) => {
+        if (!timeStr) return null;
+        const [hours, minutes] = timeStr.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        return date;
+    };
+
+    const dateToTime = (date: Date | null) => {
+        if (!date) return '';
+        const h = date.getHours().toString().padStart(2, '0');
+        const m = date.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+    };
 
     const format24To12 = (time24: string) => {
         if (!time24) return '';
@@ -629,6 +646,10 @@ export default function StudentDashboard() {
                 .form-control:focus {
                     outline: none;
                     border-color: #667eea;
+                }
+
+                .react-datepicker-wrapper {
+                    width: 100%;
                 }
 
                 /* Table Styles */
@@ -1035,11 +1056,31 @@ export default function StudentDashboard() {
                             </div>
                             <div>
                                 <label className="form-label">Out Time</label>
-                                <input type="time" className="form-control" value={formData.outTime} onChange={(e) => setFormData({ ...formData, outTime: e.target.value })} />
+                                <DatePicker
+                                    selected={timeToDate(formData.outTime)}
+                                    onChange={(date: Date | null) => setFormData({ ...formData, outTime: dateToTime(date) })}
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeIntervals={15}
+                                    timeCaption="Time"
+                                    dateFormat="h:mm aa"
+                                    className="form-control"
+                                    placeholderText="Select Out Time"
+                                />
                             </div>
                             <div>
                                 <label className="form-label">In Time</label>
-                                <input type="time" className="form-control" value={formData.inTime} onChange={(e) => setFormData({ ...formData, inTime: e.target.value })} />
+                                <DatePicker
+                                    selected={timeToDate(formData.inTime)}
+                                    onChange={(date: Date | null) => setFormData({ ...formData, inTime: dateToTime(date) })}
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeIntervals={15}
+                                    timeCaption="Time"
+                                    dateFormat="h:mm aa"
+                                    className="form-control"
+                                    placeholderText="Select In Time"
+                                />
                             </div>
                             <div>
                                 <label className="form-label">Date</label>

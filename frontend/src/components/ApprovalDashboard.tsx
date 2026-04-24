@@ -9,7 +9,7 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
     const [user, setUser] = useState<any>(null);
     const [requests, setRequests] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('pending');
+    const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
     const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -142,6 +142,8 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                 <th>Date</th>
                                 <th>Out/In</th>
                                 <th>Reason</th>
+                                <th>HOD</th>
+                                <th>Principal</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -163,11 +165,13 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                     <td>{req.date}</td>
                                     <td>{format24To12(req.outTime)} - {format24To12(req.inTime)}</td>
                                     <td>{req.reason}</td>
+                                    <td><span className={`status status-${req.hodApproval?.status || 'waiting'}`}>{req.hodApproval?.status || 'waiting'}</span></td>
+                                    <td><span className={`status status-${req.principalApproval?.status || 'waiting'}`}>{req.principalApproval?.status || 'waiting'}</span></td>
                                     <td><span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span></td>
                                     <td>
                                         <div className="action-group">
-                                            {((role === 'hod' && req.hodApproval.status === 'waiting' && req.userRole !== 'staff') ||
-                                                (role === 'principal' && req.principalApproval.status === 'waiting' && (req.hodApproval.status === 'approved' || req.userRole === 'staff'))) ? (
+                                            {((role === 'hod' && req.userRole !== 'staff') ||
+                                                (role === 'principal' && (req.hodApproval?.status === 'approved' || req.userRole === 'staff'))) ? (
                                                 <>
                                                     <button className="btn btn-success btn-sm" onClick={() => handleAction(req._id, 'approved')}>Approve</button>
                                                     <button className="btn btn-danger btn-sm" onClick={() => { setRejectingId(req._id); setRejectionModalOpen(true); }}>Reject</button>

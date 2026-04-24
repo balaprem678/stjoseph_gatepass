@@ -88,7 +88,7 @@ export default function LoginPage() {
                 <div className='tac'>
                     <h2 className='card-title'><img src={logo.src} alt="Logo" width={50} /> St. Joseph's College</h2>
                     <h5>College Gate Pass Management System</h5>
-                    <div className="subhead">Student / Faculty Portal</div>
+                    <div className="subhead" style={{ marginBlock: '1rem' }}>Student / Faculty Portal</div>
                 </div>
 
                 {view === 'login' && (
