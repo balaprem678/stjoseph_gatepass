@@ -9,6 +9,7 @@ export default function SecurityDashboard() {
     const [requests, setRequests] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchDate, setSearchDate] = useState('');
+    const [activeTab, setActiveTab] = useState<'student' | 'staff'>('student');
     const [loading, setLoading] = useState(true);
 
     const router = useRouter();
@@ -114,13 +115,40 @@ export default function SecurityDashboard() {
                     </div>
                 </div>
 
+                <div style={{ padding: '0 20px 15px', display: 'flex', gap: '10px', borderBottom: '1px solid #eee' }}>
+                    <button
+                        className="btn"
+                        style={{
+                            background: activeTab === 'student' ? '#667eea' : 'transparent',
+                            color: activeTab === 'student' ? 'white' : '#667eea',
+                            border: '1px solid #667eea',
+                            padding: '6px 16px'
+                        }}
+                        onClick={() => setActiveTab('student')}
+                    >
+                        Students
+                    </button>
+                    <button
+                        className="btn"
+                        style={{
+                            background: activeTab === 'staff' ? '#667eea' : 'transparent',
+                            color: activeTab === 'staff' ? 'white' : '#667eea',
+                            border: '1px solid #667eea',
+                            padding: '6px 16px'
+                        }}
+                        onClick={() => setActiveTab('staff')}
+                    >
+                        Staff
+                    </button>
+                </div>
+
                 <div className="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>Photo</th>
                                 <th>Name</th>
-                                <th>Enroll</th>
+                                <th>{activeTab === 'student' ? 'Enroll' : 'Staff ID'}</th>
                                 <th>Date</th>
                                 <th>Out/In</th>
                                 <th>HOD</th>
@@ -133,7 +161,7 @@ export default function SecurityDashboard() {
                                 <tr><td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
                             ) : requests.length === 0 ? (
                                 <tr><td colSpan={8} className="empty-state">No matching approved passes.</td></tr>
-                            ) : requests.map((req) => (
+                            ) : requests.filter(r => (r.userRole || 'student') === activeTab).map((req) => (
                                 <tr key={req._id}>
                                     <td>
                                         <div className="photo-thumb" style={{ backgroundImage: req.photo ? `url(${req.photo})` : 'none' }}>

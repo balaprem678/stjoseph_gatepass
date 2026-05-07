@@ -15,8 +15,12 @@ exports.apply = async (req, res) => {
             inTime,
             date,
             reason,
-            userRole: req.user.role, 
-            userId: req.user.id // From auth middleware
+            userRole: req.user.role,
+            userId: req.user.id, // From auth middleware
+            hodApproval: {
+                status: req.user.role === 'staff' ? 'not_required' : 'waiting',
+                date: req.user.role === 'staff' ? new Date() : null
+            }
         });
 
         await gatePass.save();

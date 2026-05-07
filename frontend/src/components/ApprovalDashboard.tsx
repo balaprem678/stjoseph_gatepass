@@ -12,7 +12,7 @@ interface ApprovalDashboardProps {
 }
 
 interface ApprovalState {
-    status: 'waiting' | 'approved' | 'rejected';
+    status: 'waiting' | 'approved' | 'rejected' | 'not_required';
     date?: string;
 }
 
@@ -41,6 +41,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
     const [user, setUser] = useState<StoredUser | null>(null);
     const [requests, setRequests] = useState<GatePassRequest[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState<'student' | 'staff'>('student');
     const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -191,10 +192,12 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
 
     const filteredRequests = requests.filter((req) => {
         const search = searchTerm.toLowerCase();
-        return (
+        const matchesSearch = (
             req.fullName.toLowerCase().includes(search) ||
             req.enrollNo.toLowerCase().includes(search)
         );
+        const matchesTab = req.userRole === activeTab;
+        return matchesSearch && matchesTab;
     });
 
     if (!user) return null;
@@ -245,6 +248,35 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                     </div>
                 </div>
 
+                {role === 'principal' && (
+                    <div style={{ padding: '0 20px 15px', display: 'flex', gap: '10px', borderBottom: '1px solid #eee' }}>
+                        <button
+                            className="btn"
+                            style={{
+                                background: activeTab === 'student' ? '#667eea' : 'transparent',
+                                color: activeTab === 'student' ? 'white' : '#667eea',
+                                border: '1px solid #667eea',
+                                padding: '6px 16px'
+                            }}
+                            onClick={() => setActiveTab('student')}
+                        >
+                            Student Requests
+                        </button>
+                        <button
+                            className="btn"
+                            style={{
+                                background: activeTab === 'staff' ? '#667eea' : 'transparent',
+                                color: activeTab === 'staff' ? 'white' : '#667eea',
+                                border: '1px solid #667eea',
+                                padding: '6px 16px'
+                            }}
+                            onClick={() => setActiveTab('staff')}
+                        >
+                            Staff Requests
+                        </button>
+                    </div>
+                )}
+
                 {error ? (
                     <div className="empty-state" style={{ marginBottom: '16px' }}>{error}</div>
                 ) : null}
@@ -255,7 +287,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                             <tr>
                                 <th>Photo</th>
                                 <th>Name</th>
-                                <th>Enroll</th>
+                                <th>{activeTab === 'student' ? 'Enroll' : 'Staff ID'}</th>
                                 <th>Date</th>
                                 <th>Out Time</th>
                                 <th>In Time</th>
@@ -295,9 +327,13 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                                         <td>{format24To12(req.inTime)}</td>
                                         <td>{req.reason}</td>
                                         <td>
-                                            <span className={`status status-${req.hodApproval?.status || 'waiting'}`}>
-                                                {req.hodApproval?.status || 'waiting'}
-                                            </span>
+                                            {req.userRole === 'staff' ? (
+                                                <span className="status" style={{ background: '#e9ecef', color: '#6c757d' }}>N/A</span>
+                                            ) : (
+                                                <span className={`status status-${req.hodApproval?.status || 'waiting'}`}>
+                                                    {req.hodApproval?.status || 'waiting'}
+                                                </span>
+                                            )}
                                             {/* {req.hodApproval?.status === 'rejected' && req.rejectionReason && (
                                                 <div style={{ marginTop: '6px' }}>
                                                     <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>

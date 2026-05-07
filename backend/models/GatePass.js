@@ -12,7 +12,7 @@ const gatePassSchema = new mongoose.Schema({
     reason: { type: String, required: true },
     status: { type: String, enum: ['pending', 'hod_approved', 'principal_approved', 'rejected', 'used'], default: 'pending' },
     hodApproval: {
-        status: { type: String, enum: ['waiting', 'approved', 'rejected'], default: 'waiting' },
+        status: { type: String, enum: ['waiting', 'approved', 'rejected', 'not_required'], default: 'waiting' },
         date: { type: Date }
     },
     principalApproval: {

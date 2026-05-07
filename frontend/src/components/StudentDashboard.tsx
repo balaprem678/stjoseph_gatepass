@@ -735,7 +735,13 @@ export default function StudentDashboard() {
                                     <td>{format24To12(req.outTime)}</td>
                                     <td>{format24To12(req.inTime)}</td>
 
-                                    <td><span className={`status status-${req.hodApproval?.status || 'pending'}`}>{req.hodApproval?.status || 'pending'}</span></td>
+                                    <td>
+                                        {user.role === 'staff' ? (
+                                            <span className="status" style={{ background: '#e9ecef', color: '#6c757d' }}>N/A</span>
+                                        ) : (
+                                            <span className={`status status-${req.hodApproval?.status || 'pending'}`}>{req.hodApproval?.status || 'pending'}</span>
+                                        )}
+                                    </td>
                                     <td>
                                         <span className={`status status-${req.principalApproval?.status || 'pending'}`}>{req.principalApproval?.status || 'pending'}</span>
                                         {/* {req.principalApproval?.status === 'rejected' && req.rejectionReason && (
