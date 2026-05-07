@@ -1,85 +1,98 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/utils/api';
 import './approvaldashboard.scss';
 
-export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' }) {
-    const [user, setUser] = useState<any>(null);
-    const [requests, setRequests] = useState<any[]>([]);
+type DashboardRole = 'hod' | 'principal';
+
+interface ApprovalDashboardProps {
+    role: DashboardRole;
+}
+
+interface ApprovalState {
+    status: 'waiting' | 'approved' | 'rejected';
+    date?: string;
+}
+
+interface GatePassRequest {
+    _id: string;
+    photo?: string;
+    fullName: string;
+    enrollNo: string;
+    date: string;
+    outTime?: string;
+    inTime?: string;
+    reason: string;
+    userRole: 'student' | 'staff' | string;
+    status: string;
+    rejectionReason?: string;
+    hodApproval?: ApprovalState;
+    principalApproval?: ApprovalState;
+}
+
+interface StoredUser {
+    fullName: string;
+    role: string;
+}
+
+export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
+    const [user, setUser] = useState<StoredUser | null>(null);
+    const [requests, setRequests] = useState<GatePassRequest[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
     const [rejectingId, setRejectingId] = useState<string | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [viewingReason, setViewingReason] = useState<string | null>(null);
+    const [viewingReasonId, setViewingReasonId] = useState<string | null>(null);
+    const [smsSent, setSmsSent] = useState(false);
 
     const router = useRouter();
 
-    const format24To12 = (time24: string) => {
+    const format24To12 = (time24?: string) => {
         if (!time24) return '';
-        const [hours, minutes] = time24.split(':');
-        let h = parseInt(hours, 10);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12;
-        h = h ? h : 12;
+        const [hours = '0', minutes = '0'] = time24.split(':');
+        const parsedHours = Number.parseInt(hours, 10);
+
+        if (Number.isNaN(parsedHours)) {
+            return time24;
+        }
+
+        let h = parsedHours % 12;
+        h = h || 12;
+        const ampm = parsedHours >= 12 ? 'PM' : 'AM';
         const m = minutes.padStart(2, '0');
+
         return `${h}:${m} ${ampm}`;
     };
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        if (!storedUser || !token) {
-            router.push('/');
-            return;
-        }
-        setUser(JSON.parse(storedUser));
-        fetchRequests();
-    }, []);
-
-    const fetchRequests = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_URL}/gatepass/all?status=${filterStatus}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            setRequests(data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+    const resetRejectionModal = () => {
+        setRejectionModalOpen(false);
+        setRejectingId(null);
+        setRejectionReason('');
     };
 
-    useEffect(() => {
-        if (user) fetchRequests();
-    }, [filterStatus]);
+    const handleViewRejectionReason = async (reason: string, requestId: string) => {
+        setViewingReason(reason);
+        setViewingReasonId(requestId);
+        setSmsSent(false);
 
-    const handleAction = async (id: string, decision: 'approved' | 'rejected', reason: string = '') => {
+        // Send SMS notification to mobile
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_URL}/gatepass/${id}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ decision, rejectionReason: reason })
+            const res = await fetch(`${API_URL}/gatepass/${requestId}/send-rejection-sms`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!res.ok) throw new Error('Action failed');
-            alert(`Request ${decision}`);
-            if (decision === 'rejected') {
-                setRejectionModalOpen(false);
-                setRejectingId(null);
-                setRejectionReason('');
+            if (res.ok) {
+                setSmsSent(true);
             }
-            fetchRequests();
-        } catch (err: any) {
-            alert(err.message);
+        } catch (err: unknown) {
+            console.error('Failed to send SMS:', err);
         }
     };
 
@@ -88,17 +101,110 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
         router.push('/');
     };
 
-    const filteredRequests = requests.filter(req =>
-        req.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.enrollNo.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+
+        if (!storedUser || !token) {
+            router.push('/');
+            return;
+        }
+
+        try {
+            setUser(JSON.parse(storedUser) as StoredUser);
+        } catch {
+            handleLogout();
+        }
+    }, [router]);
+
+    const fetchRequests = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const token = localStorage.getItem('token');
+            const query = filterStatus ? `?status=${encodeURIComponent(filterStatus)}` : '';
+            const res = await fetch(`${API_URL}/gatepass/all${query}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to load requests');
+            }
+
+            const data = await res.json();
+            setRequests(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error(err);
+            setError(err instanceof Error ? err.message : 'Failed to load requests');
+            setRequests([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [filterStatus]);
+
+    useEffect(() => {
+        if (user) {
+            void fetchRequests();
+        }
+    }, [user, fetchRequests]);
+
+    const handleAction = async (id: string, decision: 'approved' | 'rejected', reason = '') => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_URL}/gatepass/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ decision, rejectionReason: reason })
+            });
+
+            if (!res.ok) {
+                const payload = await res.json().catch(() => null);
+                throw new Error(payload?.message || 'Action failed');
+            }
+
+            alert(`Request ${decision}`);
+            if (decision === 'rejected') {
+                resetRejectionModal();
+            }
+
+            void fetchRequests();
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Action failed');
+        }
+    };
+
+    const canTakeAction = (request: GatePassRequest) => {
+        if (['rejected', 'used', 'principal_approved'].includes(request.status)) {
+            return false;
+        }
+
+        if (role === 'principal') {
+            return true;
+        }
+
+        return role === 'hod' && request.userRole !== 'staff' && request.status === 'pending';
+    };
+
+    const filteredRequests = requests.filter((req) => {
+        const search = searchTerm.toLowerCase();
+        return (
+            req.fullName.toLowerCase().includes(search) ||
+            req.enrollNo.toLowerCase().includes(search)
+        );
+    });
 
     if (!user) return null;
 
     return (
         <div className="container">
             <div className="header">
-                <div className="welcome-text">Welcome <b>{user.fullName}</b> · {user.role.toUpperCase()}</div>
+                <div className="welcome-text">
+                    Welcome <b>{user.fullName}</b> · {user.role.toUpperCase()}
+                </div>
                 <div className="header-actions">
                     <button className="btn btn-outline" onClick={handleLogout}>Sign out</button>
                 </div>
@@ -106,7 +212,14 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
 
             <div className="table-section">
                 <div className="table-header">
-                    <h2>Gate Pass Approval Queue</h2>
+                    <div>
+                        <h2>Gate Pass Approval Queue</h2>
+                        {role === 'principal' && (
+                            <div style={{ marginTop: '4px', fontSize: '12px', color: '#6c757d' }}>
+                                Principal can approve requests directly without waiting for HOD approval.
+                            </div>
+                        )}
+                    </div>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <input
                             type="text"
@@ -122,15 +235,19 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
+                            <option value="">All</option>
                             <option value="pending">Pending</option>
                             <option value="hod_approved">HOD Approved</option>
                             <option value="principal_approved">Approved</option>
                             <option value="rejected">Rejected</option>
                             <option value="used">Used</option>
-                            <option value="">All</option>
                         </select>
                     </div>
                 </div>
+
+                {error ? (
+                    <div className="empty-state" style={{ marginBottom: '16px' }}>{error}</div>
+                ) : null}
 
                 <div className="table-container">
                     <table>
@@ -140,7 +257,8 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                 <th>Name</th>
                                 <th>Enroll</th>
                                 <th>Date</th>
-                                <th>Out/In</th>
+                                <th>Out Time</th>
+                                <th>In Time</th>
                                 <th>Reason</th>
                                 <th>HOD</th>
                                 <th>Principal</th>
@@ -150,43 +268,115 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td></tr>
-                            ) : filteredRequests.length === 0 ? (
-                                <tr><td colSpan={8} className="empty-state">No requests matching criteria.</td></tr>
-                            ) : filteredRequests.map((req) => (
-                                <tr key={req._id}>
-                                    <td>
-                                        <div className="photo-thumb" style={{ backgroundImage: req.photo ? `url(${req.photo})` : 'none' }}>
-                                            {!req.photo && req.fullName.charAt(0)}
-                                        </div>
-                                    </td>
-                                    <td>{req.fullName}</td>
-                                    <td>{req.enrollNo}</td>
-                                    <td>{req.date}</td>
-                                    <td>{format24To12(req.outTime)} - {format24To12(req.inTime)}</td>
-                                    <td>{req.reason}</td>
-                                    <td><span className={`status status-${req.hodApproval?.status || 'waiting'}`}>{req.hodApproval?.status || 'waiting'}</span></td>
-                                    <td><span className={`status status-${req.principalApproval?.status || 'waiting'}`}>{req.principalApproval?.status || 'waiting'}</span></td>
-                                    <td><span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span></td>
-                                    <td>
-                                        <div className="action-group">
-                                            {((role === 'hod' && req.userRole !== 'staff') ||
-                                                (role === 'principal' && (req.hodApproval?.status === 'approved' || req.userRole === 'staff'))) ? (
-                                                <>
-                                                    <button className="btn btn-success btn-sm" onClick={() => handleAction(req._id, 'approved')}>Approve</button>
-                                                    <button className="btn btn-danger btn-sm" onClick={() => { setRejectingId(req._id); setRejectionModalOpen(true); }}>Reject</button>
-                                                </>
-                                            ) : (
-                                                <span style={{ fontSize: '12px', color: '#666' }}>Processed</span>
-                                            )}
-                                        </div>
-                                    </td>
+                                <tr>
+                                    <td colSpan={11} style={{ textAlign: 'center', padding: '20px' }}>Loading...</td>
                                 </tr>
-                            ))}
+                            ) : filteredRequests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={11} className="empty-state">No requests matching criteria.</td>
+                                </tr>
+                            ) : filteredRequests.map((req) => {
+                                const hasActions = canTakeAction(req);
+
+                                return (
+                                    <tr key={req._id}>
+                                        <td>
+                                            <div
+                                                className="photo-thumb"
+                                                style={{ backgroundImage: req.photo ? `url(${req.photo})` : 'none' }}
+                                            >
+                                                {!req.photo && req.fullName.charAt(0)}
+                                            </div>
+                                        </td>
+                                        <td>{req.fullName}</td>
+                                        <td>{req.enrollNo}</td>
+                                        <td>{req.date}</td>
+                                        <td>{format24To12(req.outTime)}</td>
+                                        <td>{format24To12(req.inTime)}</td>
+                                        <td>{req.reason}</td>
+                                        <td>
+                                            <span className={`status status-${req.hodApproval?.status || 'waiting'}`}>
+                                                {req.hodApproval?.status || 'waiting'}
+                                            </span>
+                                            {/* {req.hodApproval?.status === 'rejected' && req.rejectionReason && (
+                                                <div style={{ marginTop: '6px' }}>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                </div>
+                                            )} */}
+                                        </td>
+                                        <td>
+                                            <span className={`status status-${req.principalApproval?.status || 'waiting'}`}>
+                                                {req.principalApproval?.status || 'waiting'}
+                                            </span>
+                                            {/* {req.principalApproval?.status === 'rejected' && req.rejectionReason && (
+                                                <div style={{ marginTop: '6px' }}>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                </div>
+                                            )} */}
+                                        </td>
+                                        <td>
+                                            <span className={`status status-${req.status}`}>
+                                                {req.status.replace('_', ' ')}
+                                            </span>
+                                            {req.status === 'rejected' && req.rejectionReason && (
+                                                <div style={{ marginTop: '6px' }}>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>
+                                                        View Reason
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div className="action-group">
+                                                {hasActions ? (
+                                                    <>
+                                                        <button
+                                                            className="btn btn-success btn-sm"
+                                                            onClick={() => void handleAction(req._id, 'approved')}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => {
+                                                                setRejectingId(req._id);
+                                                                setRejectionModalOpen(true);
+                                                            }}
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span style={{ fontSize: '12px', color: '#666' }}>Processed</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {viewingReason && (
+                <div className="modal-overlay">
+                    <div className="modal-card" style={{ maxWidth: '400px' }}>
+                        <h2>Rejection Reason</h2>
+                        <div style={{ padding: '15px', background: '#fff3f3', border: '1px solid #ffcdd2', borderRadius: '8px', marginTop: '15px', marginBottom: '20px', color: '#d32f2f' }}>
+                            {viewingReason}
+                        </div>
+                        {smsSent && (
+                            <div style={{ padding: '10px', background: '#d4edda', border: '1px solid #c3e6cb', borderRadius: '8px', marginBottom: '15px', color: '#155724', fontSize: '12px' }}>
+                                ✓ SMS reminder sent to student
+                            </div>
+                        )}
+                        <div className="modal-buttons" style={{ justifyContent: 'center' }}>
+                            <button className="btn btn-outline" onClick={() => { setViewingReason(null); setViewingReasonId(null); setSmsSent(false); }}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {rejectionModalOpen && (
                 <div className="modal-overlay">
@@ -200,11 +390,20 @@ export default function ApprovalDashboard({ role }: { role: 'hod' | 'principal' 
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 placeholder="Please provide a reason..."
-                            ></textarea>
+                            />
                         </div>
                         <div className="modal-buttons">
-                            <button className="btn btn-outline" onClick={() => { setRejectionModalOpen(false); setRejectingId(null); setRejectionReason(''); }}>Cancel</button>
-                            <button className="btn btn-danger" onClick={() => handleAction(rejectingId!, 'rejected', rejectionReason)}>Confirm Rejection</button>
+                            <button className="btn btn-outline" onClick={resetRejectionModal}>Cancel</button>
+                            <button
+                                className="btn btn-danger"
+                                onClick={() => {
+                                    if (!rejectingId) return;
+                                    void handleAction(rejectingId, 'rejected', rejectionReason);
+                                }}
+                                disabled={!rejectingId}
+                            >
+                                Confirm Rejection
+                            </button>
                         </div>
                     </div>
                 </div>

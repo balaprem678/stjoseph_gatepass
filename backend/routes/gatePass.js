@@ -21,6 +21,7 @@ router.post('/apply', authorize(['student', 'staff']), gatePassController.apply)
 router.get('/my-requests', authorize(['student', 'staff']), gatePassController.listMyRequests);
 router.patch('/:id', authorize(['student', 'staff']), gatePassController.updateRequest);
 router.delete('/:id', authorize(['student', 'staff']), gatePassController.deleteRequest);
+router.post('/:id/send-rejection-sms', authorize(['student', 'staff']), gatePassController.sendRejectionSMS);
 
 // HOD/Principal/Security/Admin
 router.get('/all', authorize(['hod', 'principal', 'security', 'admin']), gatePassController.listAll);

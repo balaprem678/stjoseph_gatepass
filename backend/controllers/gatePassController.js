@@ -88,15 +88,11 @@ exports.updateStatus = async (req, res) => {
             }
         } else if (role === 'principal') {
             gatePass.principalApproval = { status: decision, date: new Date() };
-            
-            // For staff, Principal approval is final. For students, HOD must have approved first.
-            const isStaffApproval = gatePass.userRole === 'staff';
-            const isStudentFinalApproval = gatePass.userRole === 'student' && gatePass.hodApproval.status === 'approved';
 
-            if (decision === 'approved' && (isStaffApproval || isStudentFinalApproval)) {
+            if (decision === 'approved') {
                 gatePass.status = 'principal_approved';
-                
-                // Notify user about Final approval
+
+                // Notify user about final approval
                 await sendEmail({
                     to: gatePass.email,
                     subject: 'Gate Pass Final Approval',
@@ -179,6 +175,30 @@ exports.deleteRequest = async (req, res) => {
         if (!gatePass) return res.status(404).json({ message: 'Gate pass not found or cannot be deleted' });
 
         res.json({ message: 'Gate pass deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.sendRejectionSMS = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const gatePass = await GatePass.findById(id);
+        
+        if (!gatePass) return res.status(404).json({ message: 'Gate pass not found' });
+        if (gatePass.status !== 'rejected') {
+            return res.status(400).json({ message: 'Gate pass is not rejected' });
+        }
+
+        // Send SMS reminder with rejection reason
+        const smsPromise = sendSMS({
+            to: gatePass.phone,
+            message: `Reminder: Your gate pass (ID: ${gatePass._id}) has been rejected.\n\nReason: ${gatePass.rejectionReason || 'No reason provided.'}`
+        });
+
+        await smsPromise;
+
+        res.json({ message: 'Rejection reminder SMS sent successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

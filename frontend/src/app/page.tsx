@@ -130,7 +130,7 @@ export default function LoginPage() {
                                         <input type="radio" checked={staffAuthType === 'otp'} onChange={() => { setStaffAuthType('otp'); setAuthValue(''); }} /> OTP Login
                                     </label>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
-                                        <input type="radio" checked={staffAuthType === 'password'} onChange={() => { setStaffAuthType('password'); setAuthValue(''); }} /> Password (HOD/etc)
+                                        <input type="radio" checked={staffAuthType === 'password'} onChange={() => { setStaffAuthType('password'); setAuthValue(''); }} /> Password (HOD/Principal/Security)
                                     </label>
                                 </div>
                             </div>
