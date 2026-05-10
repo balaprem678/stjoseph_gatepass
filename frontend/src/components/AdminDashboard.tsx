@@ -6,10 +6,12 @@ import { API_URL } from '@/utils/api';
 
 export default function AdminDashboard() {
     const [user, setUser] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'stats' | 'profiles' | 'users' | 'smtp' | 'sms'>('stats');
+    const [activeTab, setActiveTab] = useState<'stats' | 'profiles' | 'students' | 'staff' | 'smtp' | 'sms'>('stats');
     const [stats, setStats] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [searchId, setSearchId] = useState('');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const [smtp, setSmtp] = useState({ 
         serviceType: 'smtp', 
         host: '', 
@@ -79,10 +81,13 @@ export default function AdminDashboard() {
         if (!user) return;
         if (activeTab === 'stats') fetchStats();
         if (activeTab === 'profiles') fetchUsers();
-        if (activeTab === 'users') fetchUsers(); // Fetch all to show both students and staff
+        if (activeTab === 'students') fetchUsers();
+        if (activeTab === 'staff') fetchUsers();
         if (activeTab === 'smtp') fetchSMTP();
         if (activeTab === 'sms') fetchSMS();
         setSearchId(''); // Clear search when switching tabs
+        setFromDate(''); // Clear from date
+        setToDate(''); // Clear to date
     }, [activeTab, user]);
 
     const handleCreateProfile = async () => {
@@ -139,6 +144,18 @@ export default function AdminDashboard() {
         router.push('/');
     };
 
+    const isDateInRange = (createdAt: string) => {
+        if (!fromDate && !toDate) return true;
+        const userDate = new Date(createdAt);
+        if (fromDate && userDate < new Date(fromDate)) return false;
+        if (toDate) {
+            const toDateEnd = new Date(toDate);
+            toDateEnd.setHours(23, 59, 59, 999);
+            if (userDate > toDateEnd) return false;
+        }
+        return true;
+    };
+
     if (!user) return null;
 
     return (
@@ -149,7 +166,8 @@ export default function AdminDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button className={`btn ${activeTab === 'stats' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'stats' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('stats')}>📊 Statistics</button>
                     <button className={`btn ${activeTab === 'profiles' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'profiles' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('profiles')}>👮 Manage Staff</button>
-                    <button className={`btn ${activeTab === 'users' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'users' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('users')}>🎓 Registered Users</button>
+                    <button className={`btn ${activeTab === 'students' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'students' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('students')}>🎓 Register Students</button>
+                    <button className={`btn ${activeTab === 'staff' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'staff' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('staff')}>👥 Register Staff</button>
                     <button className={`btn ${activeTab === 'smtp' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'smtp' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('smtp')}>📧 SMTP Settings</button>
                     <button className={`btn ${activeTab === 'sms' ? 'btn-primary' : ''}`} style={{ justifyContent: 'flex-start', background: activeTab === 'sms' ? '#2a4f77' : 'transparent', color: 'white' }} onClick={() => setActiveTab('sms')}>💬 SMS Settings</button>
                     <div style={{ marginTop: 'auto', borderTop: '1px solid #2a4f77', paddingTop: '20px' }}>
@@ -188,15 +206,42 @@ export default function AdminDashboard() {
                 {activeTab === 'profiles' && (
                     <div className="table-section">
                         <h2>Manage HOD / Principal / Security</h2>
-                        <div style={{ marginBottom: '20px' }}>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                placeholder="Search by ID..." 
-                                value={searchId}
-                                onChange={(e) => setSearchId(e.target.value)}
-                                style={{ maxWidth: '300px' }}
-                            />
+                        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1, maxWidth: '300px' }}>
+                                <label className="form-label">Search by ID</label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="Search by ID..." 
+                                    value={searchId}
+                                    onChange={(e) => setSearchId(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">From Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={fromDate}
+                                    onChange={(e) => setFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">To Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={toDate}
+                                    onChange={(e) => setToDate(e.target.value)}
+                                />
+                            </div>
+                            <button 
+                                className="btn btn-outline"
+                                onClick={() => { setSearchId(''); setFromDate(''); setToDate(''); }}
+                                style={{ padding: '8px 16px' }}
+                            >
+                                Clear Filters
+                            </button>
                         </div>
                         <div className="form-grid" style={{ marginBottom: '30px', background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
                             <div>
@@ -241,7 +286,7 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.filter(u => ['hod', 'principal', 'security'].includes(u.role) && u.loginId.toLowerCase().includes(searchId.toLowerCase())).map(u => (
+                                    {users.filter(u => ['hod', 'principal', 'security'].includes(u.role) && u.loginId.toLowerCase().includes(searchId.toLowerCase()) && isDateInRange(u.createdAt)).map(u => (
                                         <tr key={u._id}>
                                             <td>{u.loginId}</td>
                                             <td>{u.fullName}</td>
@@ -257,18 +302,45 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {activeTab === 'users' && (
+                {activeTab === 'students' && (
                     <div className="table-section">
-                        <h2>Registered Students & Staff</h2>
-                        <div style={{ marginBottom: '20px' }}>
-                            <input 
-                                type="text" 
-                                className="form-control" 
-                                placeholder="Search by ID..." 
-                                value={searchId}
-                                onChange={(e) => setSearchId(e.target.value)}
-                                style={{ maxWidth: '300px' }}
-                            />
+                        <h2>Registered Students</h2>
+                        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1, maxWidth: '300px' }}>
+                                <label className="form-label">Search by ID</label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="Search by ID..." 
+                                    value={searchId}
+                                    onChange={(e) => setSearchId(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">From Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={fromDate}
+                                    onChange={(e) => setFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">To Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={toDate}
+                                    onChange={(e) => setToDate(e.target.value)}
+                                />
+                            </div>
+                            <button 
+                                className="btn btn-outline"
+                                onClick={() => { setSearchId(''); setFromDate(''); setToDate(''); }}
+                                style={{ padding: '8px 16px' }}
+                            >
+                                Clear Filters
+                            </button>
                         </div>
                         <div className="table-container">
                             <table>
@@ -278,18 +350,83 @@ export default function AdminDashboard() {
                                         <th>Full Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
-                                        <th>Role</th>
                                         <th>Registration Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {loading ? <tr><td colSpan={6}>Loading...</td></tr> : users.filter(u => ['student', 'staff'].includes(u.role) && u.loginId.toLowerCase().includes(searchId.toLowerCase())).map(u => (
+                                    {loading ? <tr><td colSpan={5}>Loading...</td></tr> : users.filter(u => u.role === 'student' && u.loginId.toLowerCase().includes(searchId.toLowerCase()) && isDateInRange(u.createdAt)).map(u => (
                                         <tr key={u._id}>
                                             <td>{u.loginId}</td>
                                             <td>{u.fullName}</td>
                                             <td>{u.email}</td>
                                             <td>{u.phone}</td>
-                                            <td>{u.role.toUpperCase()}</td>
+                                            <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'staff' && (
+                    <div className="table-section">
+                        <h2>Registered Staff</h2>
+                        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1, maxWidth: '300px' }}>
+                                <label className="form-label">Search by ID</label>
+                                <input 
+                                    type="text" 
+                                    className="form-control" 
+                                    placeholder="Search by ID..." 
+                                    value={searchId}
+                                    onChange={(e) => setSearchId(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">From Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={fromDate}
+                                    onChange={(e) => setFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div style={{ flex: 1, maxWidth: '200px' }}>
+                                <label className="form-label">To Date</label>
+                                <input 
+                                    type="date" 
+                                    className="form-control" 
+                                    value={toDate}
+                                    onChange={(e) => setToDate(e.target.value)}
+                                />
+                            </div>
+                            <button 
+                                className="btn btn-outline"
+                                onClick={() => { setSearchId(''); setFromDate(''); setToDate(''); }}
+                                style={{ padding: '8px 16px' }}
+                            >
+                                Clear Filters
+                            </button>
+                        </div>
+                        <div className="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Registration Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loading ? <tr><td colSpan={5}>Loading...</td></tr> : users.filter(u => u.role === 'staff' && u.loginId.toLowerCase().includes(searchId.toLowerCase()) && isDateInRange(u.createdAt)).map(u => (
+                                        <tr key={u._id}>
+                                            <td>{u.loginId}</td>
+                                            <td>{u.fullName}</td>
+                                            <td>{u.email}</td>
+                                            <td>{u.phone}</td>
                                             <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
                                         </tr>
                                     ))}
