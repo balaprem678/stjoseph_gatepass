@@ -9,6 +9,7 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'stats' | 'profiles' | 'users' | 'smtp' | 'sms'>('stats');
     const [stats, setStats] = useState<any>(null);
     const [users, setUsers] = useState<any[]>([]);
+    const [searchId, setSearchId] = useState('');
     const [smtp, setSmtp] = useState({ 
         serviceType: 'smtp', 
         host: '', 
@@ -81,6 +82,7 @@ export default function AdminDashboard() {
         if (activeTab === 'users') fetchUsers(); // Fetch all to show both students and staff
         if (activeTab === 'smtp') fetchSMTP();
         if (activeTab === 'sms') fetchSMS();
+        setSearchId(''); // Clear search when switching tabs
     }, [activeTab, user]);
 
     const handleCreateProfile = async () => {
@@ -186,6 +188,16 @@ export default function AdminDashboard() {
                 {activeTab === 'profiles' && (
                     <div className="table-section">
                         <h2>Manage HOD / Principal / Security</h2>
+                        <div style={{ marginBottom: '20px' }}>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="Search by ID..." 
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                style={{ maxWidth: '300px' }}
+                            />
+                        </div>
                         <div className="form-grid" style={{ marginBottom: '30px', background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
                             <div>
                                 <label className="form-label">ID / Username</label>
@@ -224,16 +236,18 @@ export default function AdminDashboard() {
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Role</th>
+                                        <th>Registration Date</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.filter(u => ['hod', 'principal', 'security'].includes(u.role)).map(u => (
+                                    {users.filter(u => ['hod', 'principal', 'security'].includes(u.role) && u.loginId.toLowerCase().includes(searchId.toLowerCase())).map(u => (
                                         <tr key={u._id}>
                                             <td>{u.loginId}</td>
                                             <td>{u.fullName}</td>
                                             <td>{u.email}</td>
                                             <td>{u.role.toUpperCase()}</td>
+                                            <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
                                             <td><span className="status status-approved">Active</span></td>
                                         </tr>
                                     ))}
@@ -246,6 +260,16 @@ export default function AdminDashboard() {
                 {activeTab === 'users' && (
                     <div className="table-section">
                         <h2>Registered Students & Staff</h2>
+                        <div style={{ marginBottom: '20px' }}>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                placeholder="Search by ID..." 
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                style={{ maxWidth: '300px' }}
+                            />
+                        </div>
                         <div className="table-container">
                             <table>
                                 <thead>
@@ -255,16 +279,18 @@ export default function AdminDashboard() {
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Role</th>
+                                        <th>Registration Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {loading ? <tr><td colSpan={5}>Loading...</td></tr> : users.filter(u => ['student', 'staff'].includes(u.role)).map(u => (
+                                    {loading ? <tr><td colSpan={6}>Loading...</td></tr> : users.filter(u => ['student', 'staff'].includes(u.role) && u.loginId.toLowerCase().includes(searchId.toLowerCase())).map(u => (
                                         <tr key={u._id}>
                                             <td>{u.loginId}</td>
                                             <td>{u.fullName}</td>
                                             <td>{u.email}</td>
                                             <td>{u.phone}</td>
                                             <td>{u.role.toUpperCase()}</td>
+                                            <td>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
