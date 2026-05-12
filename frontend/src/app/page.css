@@ -53,7 +53,7 @@ button:active:not(:disabled) {
     transform: translateY(0);
 }
 
-.card-wrapper{
+.card-wrapper {
     background: url("../../public/cgebg.jpeg");
     background-size: cover;
     background-position: center;
@@ -61,14 +61,32 @@ button:active:not(:disabled) {
 
 }
 
-.card-title{
+.card-title {
     display: flex;
     align-items: center;
     gap: 10px;
     justify-content: center;
 }
 
+.df {
+    display: flex;
+}
 
-.tac{
+.tac {
     text-align: center;
+    color: red;
+}
+
+.login_from {
+    position: relative;
+}
+
+.art_sci {
+    /* position: absolute;
+    top: 53px;
+    right: 2%;
+    transform: translateX(-50%); */
+
+    font-size: 14px;
+    color: #1d3b5c;
 }

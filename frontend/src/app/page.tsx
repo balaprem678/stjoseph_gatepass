@@ -85,10 +85,16 @@ export default function LoginPage() {
     return (
         <div className="card-wrapper">
             <div className="card">
-                <div className='tac'>
-                    <h2 className='card-title'><img src={logo.src} alt="Logo" width={50} /> St. Joseph's College</h2>
-                    <h5>College Gate Pass Management System</h5>
-                    <div className="subhead" style={{ marginBlock: '1rem' }}>Student / Faculty Portal</div>
+                <div className='tac login_from'>
+                    <div className='df gap-3'> 
+                        <img src={logo.src} alt="Logo" width={80} />
+                        <div>
+                            <h2 className='card-title'> ST.JOSEPH'S COLLEGE </h2>
+                            <h3 className='art_sci'> (ARTS & SCIENCE) </h3>
+                        </div>
+                    </div>
+                    <h5>COLLEGE GATE PASS MANAGEMENT SYSTEM </h5>
+                    <div className="subhead" style={{ marginBlock: '1rem' }}><b>STUDENT & FACULTY</b></div>
                 </div>
 
                 {view === 'login' && (
