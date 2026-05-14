@@ -218,7 +218,7 @@ export default function StudentDashboard() {
         setIsModalOpen(true);
     };
 
-    const handleViewRejectionReason = async (reason: string, requestId: string) => {
+    const handleViewRejectionReason = async (reason: string | null, requestId: string) => {
         setViewingReason(reason);
         setViewingReasonId(requestId);
         setSmsSent(false);
@@ -746,7 +746,7 @@ export default function StudentDashboard() {
                                         <span className={`status status-${req.principalApproval?.status || 'pending'}`}>{req.principalApproval?.status || 'pending'}</span>
                                         {/* {req.principalApproval?.status === 'rejected' && req.rejectionReason && (
                                             <div style={{ marginTop: '6px' }}>
-                                                <button className="btn" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                <button className="btn" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason || null, req._id)}>View Reason</button>
                                             </div>
                                         )} */}
                                     </td>
@@ -755,7 +755,7 @@ export default function StudentDashboard() {
                                         <span className={`status status-${req.status}`}>{req.status.replace('_', ' ')}</span>
                                         {req.status === 'rejected' && req.rejectionReason && (
                                             <div style={{ marginTop: '6px' }}>
-                                                <button className="btn" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                <button className="btn" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason || null, req._id)}>View Reason</button>
                                             </div>
                                         )}
                                     </td>
