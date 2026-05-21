@@ -77,7 +77,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
         setRejectionReason('');
     };
 
-    const handleViewRejectionReason = async (reason: string, requestId: string) => {
+    const handleViewRejectionReason = async (reason: string | null, requestId: string) => {
         setViewingReason(reason);
         setViewingReasonId(requestId);
         setSmsSent(false);
@@ -336,7 +336,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                                             )}
                                             {/* {req.hodApproval?.status === 'rejected' && req.rejectionReason && (
                                                 <div style={{ marginTop: '6px' }}>
-                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason || null, req._id)}>View Reason</button>
                                                 </div>
                                             )} */}
                                         </td>
@@ -346,7 +346,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                                             </span>
                                             {/* {req.principalApproval?.status === 'rejected' && req.rejectionReason && (
                                                 <div style={{ marginTop: '6px' }}>
-                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>View Reason</button>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason || null, req._id)}>View Reason</button>
                                                 </div>
                                             )} */}
                                         </td>
@@ -356,7 +356,7 @@ export default function ApprovalDashboard({ role }: ApprovalDashboardProps) {
                                             </span>
                                             {req.status === 'rejected' && req.rejectionReason && (
                                                 <div style={{ marginTop: '6px' }}>
-                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason ?? null, req._id)}>
+                                                    <button className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '10px' }} onClick={() => handleViewRejectionReason(req.rejectionReason || null, req._id)}>
                                                         View Reason
                                                     </button>
                                                 </div>
