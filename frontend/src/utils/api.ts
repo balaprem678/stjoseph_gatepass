@@ -19,9 +19,24 @@ export const apiCall = async (endpoint: string, method: string = 'GET', body: an
     }
 
     const response = await fetch(`${API_URL}${endpoint}`, options);
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+
+    // Try to parse JSON safely
+    let data: any = null;
+    const text = await response.text();
+    try {
+        data = text ? JSON.parse(text) : null;
+    } catch (err) {
+        // non-JSON response
+        data = { message: text };
     }
+
+    if (!response.ok) {
+        const msg = (data && data.message) ? data.message : `Request failed with status ${response.status}`;
+        const error: any = new Error(msg);
+        error.status = response.status;
+        error.response = data;
+        throw error;
+    }
+
     return data;
 };
